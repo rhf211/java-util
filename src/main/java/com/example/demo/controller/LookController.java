@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import com.example.demo.aop.BusinessLog;
 import com.example.demo.service.LookService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,7 +14,13 @@ public class LookController {
     private LookService lookService;
 
     @GetMapping("/test")
+    @BusinessLog
     public String testLook() {
        return lookService.testLook();
+    }
+
+    @GetMapping("/test1")
+    public String testLook1() {
+        return lookService.testLook1();
     }
 }

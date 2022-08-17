@@ -7,4 +7,6 @@ public interface ReadService {
     IPage<ReadInfo> getReader();
 
     void saveInfo();
+
+    void seconds(Long id);
 }

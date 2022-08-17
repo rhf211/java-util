@@ -36,4 +36,9 @@ public class ReadController {
     public void saveInfo(){
       buffer.saveInfo();
     }
+
+    @GetMapping("/seconds")
+    public void seconds(Long id){
+       buffer.seconds(id);
+    }
 }

@@ -22,6 +22,7 @@ import org.frameworkset.elasticsearch.client.ClientInterface;
 import org.frameworkset.elasticsearch.entity.ESDatas;
 import org.junit.jupiter.api.Test;
 import org.redisson.RedissonCountDownLatch;
+import org.redisson.api.RBucket;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -220,6 +221,11 @@ class DemoApplicationTests {
             System.out.println(Arrays.toString(list.toArray()));
         }
         List<ReadInfo> list = new ArrayList<>();
-        list.stream().collect(Collectors.groupingBy(ReadInfo::getSms_id, Collectors.collectingAndThen()));
+    }
+
+    @Test
+    public void redisCluster() {
+        RBucket<Object> bucket1 = redissonClient.getBucket("5");
+        bucket1.set(5);
     }
 }

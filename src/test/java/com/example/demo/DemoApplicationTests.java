@@ -1,36 +1,37 @@
 package com.example.demo;
 
+import cn.binarywang.wx.miniapp.bean.WxMaPhoneNumberInfo;
+import cn.binarywang.wx.miniapp.bean.WxMaUserInfo;
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.extra.spring.SpringUtil;
+import cn.hutool.json.JSONUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.api.R;
 import com.example.demo.config.SpringContext;
 import com.example.demo.dao.ConfigDao;
 import com.example.demo.dao.ReaderDao;
 import com.example.demo.entity.ConfigDO;
 import com.example.demo.entity.JdGoods;
 import com.example.demo.entity.ReadInfo;
-import com.example.demo.entity.juejin.JuejinEntity;
+import com.example.demo.entity.ReadInfoView;
+import com.example.demo.service.AppletsService;
 import com.example.demo.service.Pay;
 import com.example.demo.service.ReadService;
 import com.example.demo.service.impl.ResChainHandler;
-import com.example.demo.util.JsonUtil;
-import com.example.demo.util.ProjectInfoUtils;
-import io.netty.handler.codec.redis.ArrayRedisMessage;
+import com.example.demo.util.ConfigCenterWrapper;
 import org.checkerframework.checker.units.qual.A;
 import org.frameworkset.elasticsearch.boot.BBossESStarter;
 import org.frameworkset.elasticsearch.client.ClientInterface;
 import org.frameworkset.elasticsearch.entity.ESDatas;
 import org.junit.jupiter.api.Test;
-import org.redisson.RedissonCountDownLatch;
 import org.redisson.api.RBucket;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
-import org.springframework.http.ResponseEntity;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
@@ -62,16 +63,22 @@ class DemoApplicationTests {
     @Autowired
     private BBossESStarter bBossESStarter;
 
+    @Autowired
+    AppletsService appletsService;
+
+    @Resource(name = "redisTemplate")
+    RedisTemplate redisTemplate;
+
 
     @Test
     void contextLoads() {
-        readService.getReader();
+        redisTemplate.opsForValue()
+                .set("user:session:" + "10086", JSONUtil.toJsonStr(new ReadInfo(1,"sd")), 1L, TimeUnit.DAYS);
     }
 
     @Test
     void swagger2() {
         IPage<ReadInfo> reader = readService.getReader();
-        reader.getRecords().stream().forEach(readInfo -> System.out.println(readInfo.getSms_id()));
     }
 
     @Test
@@ -80,7 +87,7 @@ class DemoApplicationTests {
         //GET 请求
         //ReadInfo readInfo = template.getForObject(url, ReadInfo.class);
         URI uri = URI.create(url);
-        ResponseEntity<JuejinEntity> responseEntity = template.postForEntity(uri, null, JuejinEntity.class);
+        //ResponseEntity<JuejinEntity> responseEntity = template.postForEntity(uri, null, JuejinEntity.class);
 
         /*//POST请求
         MultiValueMap<String, Object> request = new LinkedMultiValueMap<>();
@@ -92,8 +99,8 @@ class DemoApplicationTests {
         URI uri = URI.create(url);
         resultData = template.postForObject(uri, new ReadInfo(), ReadInfo.class);
         System.out.println("******POST使用URI查询返回结果={}" + resultData);*/
-        Object body = responseEntity.getBody();
-        System.out.println(body);
+        //Object body = responseEntity.getBody();
+        //System.out.println(body);
     }
 
     @Test
@@ -176,10 +183,23 @@ class DemoApplicationTests {
         ReadInfo readInfo = new ReadInfo();
         readInfo.setId(1);
         readInfo.setValue("kk5kww");
-        readInfo.setSms_id("dsd");
-        // readerDao.insertOrupdate(null);
+        readInfo.set_deleted(true);
 
-        readerDao.batchUpdate(Arrays.asList(readInfo));
+        ReadInfo readInfo1 = readerDao.selectById(1L);
+        boolean deleted = readInfo1.is_deleted();
+        System.out.println(deleted);
+    }
+
+    @Test
+    public void buildQuery() {
+        QueryWrapper<ReadInfo> wrapper = new QueryWrapper<>();
+        String s = "2";
+        QueryWrapper<ReadInfo> or = wrapper.or(ObjectUtil.isNotEmpty(s), w -> {
+            w.like("id", s)
+                    .or().like("value", s)
+                    .or().like("sms_id", s);
+        });
+        readerDao.selectList(wrapper);
     }
 
     @Test
@@ -205,7 +225,7 @@ class DemoApplicationTests {
     }
 
     public static void main(String[] args) {
-        List<Integer> ids = Arrays.asList(1, 2, 3, 4, 5);
+        /*List<Integer> ids = Arrays.asList(1, 2, 3, 4, 5);
         int pageSize = 2;
         List<List<Integer>> splitList = IntStream
                 //{0,1,2}三页
@@ -220,7 +240,8 @@ class DemoApplicationTests {
         for (List<Integer> list : splitList) {
             System.out.println(Arrays.toString(list.toArray()));
         }
-        List<ReadInfo> list = new ArrayList<>();
+        List<ReadInfo> list = new ArrayList<>();*/
+        //将list 转为 map
     }
 
     @Test

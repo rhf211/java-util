@@ -25,9 +25,9 @@ public class ReadController {
     @Autowired
     private ReadService buffer;
 
-    @ApiOperation("Read列表")
+    @ApiOperation("Read Get")
     @PostMapping("/get")
-    public IPage<ReadInfo> getInfo(@ApiParam("章节") String s) {
+    public IPage<ReadInfo> getInfo(@ApiParam("list") String s) {
         return buffer.getReader();
     }
 

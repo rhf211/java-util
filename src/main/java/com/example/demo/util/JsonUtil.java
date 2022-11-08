@@ -1,9 +1,11 @@
 package com.example.demo.util;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.example.demo.entity.JdGoods;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 
 import java.util.Arrays;
 import java.util.List;
@@ -31,5 +33,6 @@ public class JsonUtil {
         String lis = "[{\"score\":\"2\",\"img\":\"img1\",\"price\":\"price1\",\"name\":\"text\",\"id\":\"2\"}]";
         List<JdGoods> jdGoods1 = gson.fromJson(lis, new TypeToken<List<JdGoods>>() {
         }.getType());
+
     }
 }

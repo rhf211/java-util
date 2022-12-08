@@ -2,6 +2,10 @@ package com.example.demo;
 
 import cn.binarywang.wx.miniapp.bean.WxMaPhoneNumberInfo;
 import cn.binarywang.wx.miniapp.bean.WxMaUserInfo;
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateTime;
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.lang.UUID;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import cn.hutool.json.JSONUtil;
@@ -11,15 +15,13 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.example.demo.config.SpringContext;
 import com.example.demo.dao.ConfigDao;
 import com.example.demo.dao.ReaderDao;
-import com.example.demo.entity.ConfigDO;
-import com.example.demo.entity.JdGoods;
-import com.example.demo.entity.ReadInfo;
-import com.example.demo.entity.ReadInfoView;
+import com.example.demo.entity.*;
 import com.example.demo.service.AppletsService;
 import com.example.demo.service.Pay;
 import com.example.demo.service.ReadService;
 import com.example.demo.service.impl.ResChainHandler;
 import com.example.demo.util.ConfigCenterWrapper;
+import org.apache.commons.lang3.StringUtils;
 import org.checkerframework.checker.units.qual.A;
 import org.frameworkset.elasticsearch.boot.BBossESStarter;
 import org.frameworkset.elasticsearch.client.ClientInterface;
@@ -36,6 +38,7 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
 import java.net.URI;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
@@ -73,12 +76,12 @@ class DemoApplicationTests {
     @Test
     void contextLoads() {
         redisTemplate.opsForValue()
-                .set("user:session:" + "10086", JSONUtil.toJsonStr(new ReadInfo(1,"sd")), 1L, TimeUnit.DAYS);
+                .set("user:session:" + "10086", JSONUtil.toJsonStr(new ReadInfo(1, "sd")), 1L, TimeUnit.DAYS);
     }
 
     @Test
     void swagger2() {
-        IPage<ReadInfo> reader = readService.getReader();
+        IPage<ReadInfo> reader = readService.getReader(new Date());
     }
 
     @Test
@@ -106,6 +109,19 @@ class DemoApplicationTests {
     @Test
     void rabbitMqTest() {
 
+    }
+
+    @Test
+    void redissonTest() {
+        RLock lock = redissonClient.getLock("test:lock");
+        try {
+            boolean b = lock.tryLock();
+            if (b) {
+                System.out.println("lock success");
+            }
+        } catch (Exception e) {
+
+        }
     }
 
     @Test
@@ -242,11 +258,33 @@ class DemoApplicationTests {
         }
         List<ReadInfo> list = new ArrayList<>();*/
         //将list 转为 map
+        //
+        List<ReadInfo> list=new ArrayList<>();
+        list.add(new ReadInfo());
+        List<ReadInfo> list1=null;
+        boolean empty = CollUtil.isEmpty(list);
+        boolean empty1 = CollUtil.isEmpty(list1);
+        System.out.println(empty);
+        System.out.println(empty1);
+        //list 根据id 相互匹配对象中的数据
     }
 
     @Test
     public void redisCluster() {
         RBucket<Object> bucket1 = redissonClient.getBucket("5");
         bucket1.set(5);
+    }
+
+    @Test
+    public void daoTest() {
+        ReadInfo readInfo = readerDao.selectById(1);
+        List<Attrs> attrs = readInfo.getAttrs();
+        for (Attrs attr : attrs) {
+            if (attr.getType().equals("String")){
+                attr.setAttr("11111");
+            }
+        }
+        //readInfo.setAttrs(attrs);
+        System.out.println(readInfo);
     }
 }

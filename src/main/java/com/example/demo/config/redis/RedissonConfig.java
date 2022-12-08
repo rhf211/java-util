@@ -1,4 +1,4 @@
-package com.example.demo.config;
+package com.example.demo.config.redis;
 
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;

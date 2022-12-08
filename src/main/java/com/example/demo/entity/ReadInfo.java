@@ -1,9 +1,12 @@
 package com.example.demo.entity;
 
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
-import io.swagger.annotations.Api;
+import com.example.demo.config.serializer.DateJsonSerializerConfig;
+import com.example.demo.typehandler.AttrTypeHandler;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,7 +14,8 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
+import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -19,19 +23,23 @@ import java.util.List;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-public class ReadInfo {
+public class ReadInfo implements Serializable {
     @ApiModelProperty("id")
     private Integer id;
     @ApiModelProperty("内容")
     private String value;
     @ApiModelProperty
     private Integer user_id;
-    @TableField(typeHandler = JacksonTypeHandler.class)
+    @TableField(typeHandler = AttrTypeHandler.class)
     private List<Attrs> attrs;
+    @TableLogic
     private boolean is_deleted;
+    private Date created;
+    private Date create_union;
+
     public ReadInfo(Integer id, String value) {
         this.id = id;
-        this.value=value;
+        this.value = value;
     }
 
     @PostConstruct

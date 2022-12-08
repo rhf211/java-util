@@ -1,4 +1,4 @@
-package com.example.demo.config;
+package com.example.demo.config.mybatis;
 
 import com.baomidou.mybatisplus.extension.handlers.GsonTypeHandler;
 import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;

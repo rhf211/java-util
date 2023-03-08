@@ -1,4 +1,4 @@
-package com.example.demo.config;
+package com.example.demo.config.redis;
 
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;

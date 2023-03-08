@@ -1,49 +1,48 @@
 package com.example.demo;
 
+import cn.binarywang.wx.miniapp.bean.WxMaPhoneNumberInfo;
+import cn.binarywang.wx.miniapp.bean.WxMaUserInfo;
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateTime;
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.lang.UUID;
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.extra.spring.SpringUtil;
+import cn.hutool.json.JSONUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.api.R;
 import com.example.demo.config.SpringContext;
 import com.example.demo.dao.ConfigDao;
 import com.example.demo.dao.ReaderDao;
-import com.example.demo.entity.ConfigDO;
-import com.example.demo.entity.JdGoods;
-import com.example.demo.entity.ReadInfo;
-import com.example.demo.entity.juejin.JuejinEntity;
-import com.example.demo.entity.test.A;
-import com.example.demo.service.LookService;
+import com.example.demo.entity.*;
+import com.example.demo.service.AppletsService;
 import com.example.demo.service.Pay;
 import com.example.demo.service.ReadService;
 import com.example.demo.service.impl.ResChainHandler;
-import com.example.demo.util.JsonUtil;
-import com.example.demo.util.ProjectInfoUtils;
-import io.netty.handler.codec.redis.ArrayRedisMessage;
+import com.example.demo.util.ConfigCenterWrapper;
+import org.apache.commons.lang3.StringUtils;
+import org.checkerframework.checker.units.qual.A;
 import org.frameworkset.elasticsearch.boot.BBossESStarter;
 import org.frameworkset.elasticsearch.client.ClientInterface;
 import org.frameworkset.elasticsearch.entity.ESDatas;
 import org.junit.jupiter.api.Test;
-import org.redisson.RedissonCountDownLatch;
+import org.redisson.api.RBucket;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
-import org.springframework.http.ResponseEntity;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
 import java.net.URI;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.atomic.AtomicStampedReference;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -51,9 +50,6 @@ import java.util.stream.IntStream;
 class DemoApplicationTests {
     @Autowired
     private ReadService readService;
-
-    @Autowired
-    private LookService lookService;
 
     @Autowired
     private RestTemplate template;
@@ -70,17 +66,22 @@ class DemoApplicationTests {
     @Autowired
     private BBossESStarter bBossESStarter;
 
+    @Autowired
+    AppletsService appletsService;
+
+    @Resource(name = "redisTemplate")
+    RedisTemplate redisTemplate;
+
 
     @Test
     void contextLoads() {
-        //readService.getReader();
-        lookService.testLook();
+        redisTemplate.opsForValue()
+                .set("user:session:" + "10086", JSONUtil.toJsonStr(new ReadInfo(1, "sd")), 1L, TimeUnit.DAYS);
     }
 
     @Test
     void swagger2() {
-        IPage<ReadInfo> reader = readService.getReader();
-        reader.getRecords().stream().forEach(readInfo -> System.out.println(readInfo.getSms_id()));
+        IPage<ReadInfo> reader = readService.getReader(new Date());
     }
 
     @Test
@@ -89,7 +90,7 @@ class DemoApplicationTests {
         //GET 请求
         //ReadInfo readInfo = template.getForObject(url, ReadInfo.class);
         URI uri = URI.create(url);
-        ResponseEntity<JuejinEntity> responseEntity = template.postForEntity(uri, null, JuejinEntity.class);
+        //ResponseEntity<JuejinEntity> responseEntity = template.postForEntity(uri, null, JuejinEntity.class);
 
         /*//POST请求
         MultiValueMap<String, Object> request = new LinkedMultiValueMap<>();
@@ -101,13 +102,26 @@ class DemoApplicationTests {
         URI uri = URI.create(url);
         resultData = template.postForObject(uri, new ReadInfo(), ReadInfo.class);
         System.out.println("******POST使用URI查询返回结果={}" + resultData);*/
-        Object body = responseEntity.getBody();
-        System.out.println(body);
+        //Object body = responseEntity.getBody();
+        //System.out.println(body);
     }
 
     @Test
     void rabbitMqTest() {
 
+    }
+
+    @Test
+    void redissonTest() {
+        RLock lock = redissonClient.getLock("test:lock");
+        try {
+            boolean b = lock.tryLock();
+            if (b) {
+                System.out.println("lock success");
+            }
+        } catch (Exception e) {
+
+        }
     }
 
     @Test
@@ -185,10 +199,23 @@ class DemoApplicationTests {
         ReadInfo readInfo = new ReadInfo();
         readInfo.setId(1);
         readInfo.setValue("kk5kww");
-        readInfo.setSms_id("dsd");
-        // readerDao.insertOrupdate(null);
+        readInfo.set_deleted(true);
 
-        readerDao.batchUpdate(Arrays.asList(readInfo));
+        ReadInfo readInfo1 = readerDao.selectById(1L);
+        boolean deleted = readInfo1.is_deleted();
+        System.out.println(deleted);
+    }
+
+    @Test
+    public void buildQuery() {
+        QueryWrapper<ReadInfo> wrapper = new QueryWrapper<>();
+        String s = "2";
+        QueryWrapper<ReadInfo> or = wrapper.or(ObjectUtil.isNotEmpty(s), w -> {
+            w.like("id", s)
+                    .or().like("value", s)
+                    .or().like("sms_id", s);
+        });
+        readerDao.selectList(wrapper);
     }
 
     @Test
@@ -229,30 +256,35 @@ class DemoApplicationTests {
         for (List<Integer> list : splitList) {
             System.out.println(Arrays.toString(list.toArray()));
         }
-        List<ReadInfo> list = new ArrayList<>();
+        List<ReadInfo> list = new ArrayList<>();*/
+        //将list 转为 map
+        //
+        List<ReadInfo> list=new ArrayList<>();
+        list.add(new ReadInfo());
+        List<ReadInfo> list1=null;
+        boolean empty = CollUtil.isEmpty(list);
+        boolean empty1 = CollUtil.isEmpty(list1);
+        System.out.println(empty);
+        System.out.println(empty1);
+        //list 根据id 相互匹配对象中的数据
+    }
 
-        Lock lock = new ReentrantLock();
-        lock.lock();
-        lock.unlock();*/
-        List<Integer> ids = Arrays.asList(5, 1, 3, 4, 2);
-        A a=new A();
-        a.setSex("male");
-        A ba=new A();
-        ba.setSex("female");
-        A ra=new A();
-        ra.setSex("male");
+    @Test
+    public void redisCluster() {
+        RBucket<Object> bucket1 = redissonClient.getBucket("5");
+        bucket1.set(5);
+    }
 
-        List<A> as = Arrays.asList(a, ba, ra);
-        List<Integer> collect1 = ids.stream().sorted((x, y) -> x-y).collect(Collectors.toList());
-        List<Integer> collect = ids.stream().sorted(Comparator.comparing(Integer::intValue).reversed()).collect(Collectors.toList());
-        List<Integer> collect2 = ids.stream().filter((x) -> x > 2).collect(Collectors.toList());
-
-        Map<String, List<A>> collect3 = as.stream().collect(Collectors.groupingBy(a1 -> a1.getSex()));
-
-        System.out.println(Arrays.toString(collect.toArray()));
-        System.out.println(Arrays.toString(collect1.toArray()));
-        System.out.println(Arrays.toString(collect2.toArray()));
-        System.out.println(collect3);
-
+    @Test
+    public void daoTest() {
+        ReadInfo readInfo = readerDao.selectById(1);
+        List<Attrs> attrs = readInfo.getAttrs();
+        for (Attrs attr : attrs) {
+            if (attr.getType().equals("String")){
+                attr.setAttr("11111");
+            }
+        }
+        //readInfo.setAttrs(attrs);
+        System.out.println(readInfo);
     }
 }

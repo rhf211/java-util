@@ -7,9 +7,5 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface BusinessLog {
-    String value() default "1";
-
-    String ext() default "22";
-
+public @interface NeedLogin {
 }

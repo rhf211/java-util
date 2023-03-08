@@ -21,9 +21,7 @@ public class TestProvider {
             ReadInfo readInfo=new ReadInfo();
             readInfo.setId(0);
             readInfo.setValue("5");
-            readInfo.setSms_id("10086");
             CorrelationData correlationData=new CorrelationData();
-            correlationData.setId(readInfo.getSms_id());
             rabbitTemplate.convertAndSend("order.exchange","order.key",readInfo,correlationData);
 
 

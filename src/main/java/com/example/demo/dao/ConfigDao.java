@@ -6,6 +6,7 @@ import com.example.demo.entity.ConfigDO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+//@DS("slave")
 @Mapper
 public interface ConfigDao extends BaseMapper<ConfigDO> {
 }

@@ -2,6 +2,7 @@ package com.example.demo.dao;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.example.demo.entity.ReadInfo;
+import com.example.demo.entity.ReadInfoView;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -11,6 +12,7 @@ import java.util.List;
 @Mapper
 public interface ReaderDao extends BaseMapper<ReadInfo> {
 
+    //Insert into lqq valuse('','')
    @Insert({"<script>",
             "insert into lqq ",
             "(value) ",
@@ -25,4 +27,6 @@ public interface ReaderDao extends BaseMapper<ReadInfo> {
    void insertOrupdate(@Param("list") List<ReadInfo> readInfo);
 
     void batchUpdate(@Param("list")List<ReadInfo> asList);
+
+    List<ReadInfoView> getDetailReadInfo(@Param("id") Integer id);
 }

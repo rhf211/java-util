@@ -38,6 +38,14 @@ public class LookServiceImpl implements LookService {
         return name;
     }
 
+    @Override
+    @BusinessLog
+    public String testLook1() {
+        Map<String, String> map = MapPropertiesConfig.getMap();
+        System.out.println("执行业务代码2");
+        return "test2";
+    }
+
     public void test(String s) {
         System.out.println("反射用的方法=" + s);
     }

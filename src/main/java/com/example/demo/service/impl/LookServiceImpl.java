@@ -30,11 +30,12 @@ public class LookServiceImpl implements LookService {
 
 
     @Override
-    //@BusinessLog
+    @BusinessLog
     public String testLook() {
         Map<String, String> map = MapPropertiesConfig.getMap();
         System.out.println("执行业务代码");
-        return "test";
+        String name = Thread.currentThread().getName();
+        return name;
     }
 
     public void test(String s) {

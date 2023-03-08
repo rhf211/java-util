@@ -31,10 +31,6 @@ spring:
           url: jdbc:mysql://49.235.66.54:3306/lqq?useUnicode=true&characterEncoding=utf-8
           username: root
           password: rhf1028623847
-        slave:
-          url: jdbc:mysql://weee.db.tb1.sayweee.net:3306/weee_comm?characterEncoding=UTF-8&allowMultiQueries=true
-          username: weee_customer
-          password: JcYuU8JLzly4457b
 
 
 project:

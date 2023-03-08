@@ -10,13 +10,14 @@ import com.example.demo.entity.ConfigDO;
 import com.example.demo.entity.JdGoods;
 import com.example.demo.entity.ReadInfo;
 import com.example.demo.entity.juejin.JuejinEntity;
+import com.example.demo.entity.test.A;
+import com.example.demo.service.LookService;
 import com.example.demo.service.Pay;
 import com.example.demo.service.ReadService;
 import com.example.demo.service.impl.ResChainHandler;
 import com.example.demo.util.JsonUtil;
 import com.example.demo.util.ProjectInfoUtils;
 import io.netty.handler.codec.redis.ArrayRedisMessage;
-import org.checkerframework.checker.units.qual.A;
 import org.frameworkset.elasticsearch.boot.BBossESStarter;
 import org.frameworkset.elasticsearch.client.ClientInterface;
 import org.frameworkset.elasticsearch.entity.ESDatas;
@@ -38,6 +39,11 @@ import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicStampedReference;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -45,6 +51,9 @@ import java.util.stream.IntStream;
 class DemoApplicationTests {
     @Autowired
     private ReadService readService;
+
+    @Autowired
+    private LookService lookService;
 
     @Autowired
     private RestTemplate template;
@@ -64,7 +73,8 @@ class DemoApplicationTests {
 
     @Test
     void contextLoads() {
-        readService.getReader();
+        //readService.getReader();
+        lookService.testLook();
     }
 
     @Test
@@ -204,7 +214,7 @@ class DemoApplicationTests {
     }
 
     public static void main(String[] args) {
-        List<Integer> ids = Arrays.asList(1, 2, 3, 4, 5);
+        /*List<Integer> ids = Arrays.asList(1, 2, 3, 4, 5);
         int pageSize = 2;
         List<List<Integer>> splitList = IntStream
                 //{0,1,2}三页
@@ -220,6 +230,29 @@ class DemoApplicationTests {
             System.out.println(Arrays.toString(list.toArray()));
         }
         List<ReadInfo> list = new ArrayList<>();
-        list.stream().collect(Collectors.groupingBy(ReadInfo::getSms_id, Collectors.collectingAndThen()));
+
+        Lock lock = new ReentrantLock();
+        lock.lock();
+        lock.unlock();*/
+        List<Integer> ids = Arrays.asList(5, 1, 3, 4, 2);
+        A a=new A();
+        a.setSex("male");
+        A ba=new A();
+        ba.setSex("female");
+        A ra=new A();
+        ra.setSex("male");
+
+        List<A> as = Arrays.asList(a, ba, ra);
+        List<Integer> collect1 = ids.stream().sorted((x, y) -> x-y).collect(Collectors.toList());
+        List<Integer> collect = ids.stream().sorted(Comparator.comparing(Integer::intValue).reversed()).collect(Collectors.toList());
+        List<Integer> collect2 = ids.stream().filter((x) -> x > 2).collect(Collectors.toList());
+
+        Map<String, List<A>> collect3 = as.stream().collect(Collectors.groupingBy(a1 -> a1.getSex()));
+
+        System.out.println(Arrays.toString(collect.toArray()));
+        System.out.println(Arrays.toString(collect1.toArray()));
+        System.out.println(Arrays.toString(collect2.toArray()));
+        System.out.println(collect3);
+
     }
 }

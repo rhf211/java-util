@@ -25,13 +25,7 @@ public class BusLogAspect {
         Object[] args = joinPoint.getArgs();
         String[] params = signature.getParameterNames();
         try {
-            Class<LookServiceImpl> aClass = LookServiceImpl.class;
-            Method[] methods = aClass.getMethods();
-            for (Method method1 : methods) {
-                if (method1.getName().equals("test")) {
-                    method1.invoke(aClass.newInstance(), "s");
-                }
-            }
+            System.out.println("获取方法名："+method.getName());
         } catch (Exception e) {
             e.printStackTrace();
         }
